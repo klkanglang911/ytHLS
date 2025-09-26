@@ -1,0 +1,22 @@
+# 示例配置（请勿在公开仓库中提交真实密钥）
+
+PROJE : ythls-FastAPI
+APP   :
+  HOST    : 127.0.0.1   # 生产建议仅本机监听，由 Nginx 反代
+  PORT    : 3310
+  WORKERS : 1
+  CACHE   : 15          # 分钟
+
+# 解析后端：true=使用 yt-dlp；false=使用 httpx+parsel
+yt-dlp : true
+
+# 可选：API Key 访问控制（示例值，部署时用环境变量覆盖更安全）
+SECURITY:
+  REQUIRE_API_KEY: true
+  API_KEYS:
+    - change-me-please
+
+# 生产环境推荐用环境变量覆盖上述安全配置：
+#   YTHLS_REQUIRE_API_KEY=true
+#   YTHLS_API_KEYS="KeyA,KeyB"
+

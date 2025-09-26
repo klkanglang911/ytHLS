@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+.venv/
+env/
+ENV/
+.env
+
+# Packaging / build
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+wheels/
+*.egg
+
+# Tests / coverage
+.tox/
+.nox/
+.pytest_cache/
+.coverage*
+coverage.xml
+htmlcov/
+
+# Logs
+*.log
+logs/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local secrets / configs
+AYAR.yml
+cookies.txt
+
