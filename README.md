@@ -38,20 +38,6 @@
 * *Copyright (C) 2024 by* [keyiflerolsun](https://github.com/keyiflerolsun) ❤️️
 * *Licensed under the* [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/keyiflerolsun/ythls-FastAPI/blob/master/LICENSE).
 
-## ♻️ Contact
-
-*Feel free to contact me on* **Telegram:** [@keyiflerolsun](https://t.me/KekikKahve)
-
-## 💸 Donate
-
-**[☕️ Buy Me a Coffe](https://KekikAkademi.org/Kahve)**
-
-***
-
-> *Written for* **[@KekikAkademi](https://t.me/KekikAkademi)**
-
----
-
 # 🇨🇳 中文说明与部署指南
 
 本项目已扩展“服务端 HLS 代理 + 清单改写”，可在中国大陆网络环境下，通过部署在海外 VPS 的本服务，直接在 VLC 等播放器收看 YouTube 直播/视频流，而无需客户端再直连 `googlevideo.com`。
@@ -104,8 +90,9 @@ SECURITY:
 
 ```
 YTHLS_REQUIRE_API_KEY=true \
-YTHLS_API_KEYS="Sunkey9827,Sunkey0711" \
+YTHLS_API_KEYS="keys1234,keys0000" \
 /www/wwwroot/ythls-FastAPI/venv/bin/python basla.py
+
 ```
 
 Docker 用户可通过 `-e` 传入：
@@ -182,12 +169,12 @@ python basla.py
 server
 {
     listen 80;
-    server_name ht.982788.xyz;  # 改为你的域名
+    server_name <example.com>;  # 改为你的域名
     index index.php index.html index.htm default.php default.htm default.html;
     root /www/wwwroot/ythls-FastAPI;
 
     # 证书申请校验
-    include /www/server/panel/vhost/nginx/well-known/ht.982788.xyz.conf;
+    include /www/server/panel/vhost/nginx/well-known/<example.com>.conf;
 
     # 错误页
     error_page 404 /404.html;
@@ -226,7 +213,7 @@ server
     include enable-php-00.conf;
 
     # 伪静态
-    include /www/server/panel/vhost/rewrite/ht.982788.xyz.conf;
+    include /www/server/panel/vhost/rewrite/<example.com>.conf;
 
     # 访问限制
     location ~ ^/(\.user\.ini|\.htaccess|\.git|\.env|\.svn|\.project|LICENSE|README\.md) {
@@ -237,8 +224,8 @@ server
     location ~ \.well-known { allow all; }
     if ($uri ~ "^/\.well-known/.*\.(php|jsp|py|js|css|lua|ts|go|zip|tar\.gz|rar|7z|sql|bak)$") { return 403; }
 
-    access_log  /www/wwwlogs/ht.982788.xyz.log;
-    error_log   /www/wwwlogs/ht.982788.xyz.error.log;
+    access_log  /www/wwwlogs/<example.com>.log;
+    error_log   /www/wwwlogs/<example.com>.error.log;
 }
 ```
 
@@ -284,24 +271,7 @@ docker compose up -d --build
   - 优化：HLS 反代的缓冲与 Range 透传配置示例
 - 说明：保留 `yt-dlp` 与网页解析两种模式，支持 `cookies.txt`
 
-## 开源发布与配置模板
 
-- 使用模板：仓库附带 `AYAR.example.yml`，部署前请复制为实际配置：
-  - `cp AYAR.example.yml AYAR.yml`，再按需修改。
-  - 切勿将真实 `AYAR.yml` 提交到仓库（`.gitignore` 已默认忽略）。
-- 管理密钥：生产环境建议用环境变量覆盖，而非明文写入 `AYAR.yml`。
-  - `YTHLS_REQUIRE_API_KEY=true|false`
-  - `YTHLS_API_KEYS="KeyA,KeyB"`
-  - Supervisor 启动示例：
-    - `YTHLS_REQUIRE_API_KEY=true YTHLS_API_KEYS="Sunkey9827,Sunkey0711" /www/wwwroot/ythls-FastAPI/venv/bin/python basla.py`
-  - 或包装脚本 `run.sh` 中设置上述环境变量。
-- 忽略敏感文件：`.gitignore` 已包含 `AYAR.yml`、`cookies.txt`、虚拟环境、日志等。
-  - 若误加到暂存区：`git rm --cached AYAR.yml cookies.txt -f && git commit -m "chore: drop secrets"`
-  - 若已推送含密钥历史：请旋转密钥，并使用 `git filter-repo` 或 `git filter-branch` 清理历史。
-- 推送到 GitHub（示例）：
-  - `git init && git add . && git commit -m "v1.1"`
-  - `git branch -M main && git remote add origin https://github.com/klkanglang911/YtFLS.git`
-  - `git push -u origin main`
 
 ## Supervisor 启动脚本示例（run.sh）
 
@@ -315,7 +285,7 @@ cd /www/wwwroot/ythls-FastAPI
 
 # 覆盖安全配置（也可放到面板“启动命令”里）
 export YTHLS_REQUIRE_API_KEY=true
-export YTHLS_API_KEYS="Sunkey9827,Sunkey0711"
+export YTHLS_API_KEYS="keys1234,keys0000"
 
 exec /www/wwwroot/ythls-FastAPI/venv/bin/python basla.py
 ```
