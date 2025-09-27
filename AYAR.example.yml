@@ -10,11 +10,11 @@ APP   :
 # 解析后端：true=使用 yt-dlp；false=使用 httpx+parsel
 yt-dlp : true
 
-# 可选：API Key 访问控制（示例值，部署时用环境变量覆盖更安全）
+# 可选：API Key 访问控制（示例值，部署时用环境变量覆盖更安全 可多个KEY，一行一个）
 SECURITY:
   REQUIRE_API_KEY: true
   API_KEYS:
-    - change-me-please
+    - <自定义字母数字API Key>       
 
 # 生产环境推荐用环境变量覆盖上述安全配置：
 #   YTHLS_REQUIRE_API_KEY=true

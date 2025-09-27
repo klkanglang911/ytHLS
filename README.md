@@ -134,103 +134,149 @@ python basla.py
 # 打开 http://127.0.0.1:3310/youtube 验证
 ```
 
-## 部署（Debian + 宝塔面板，推荐方案：Python venv + Supervisor + Nginx 反代）
 
-1) 上传代码至服务器
+
+## VPS部署说明(Python venv + systemd + Nginx反代)
+
+1. 可直连YouTube地区VPS
+
+2. 域名
+
+3. 上传代码至服务器 
+
+   ```
+   git clone https://github.com/klkanglang911/ytHLS.git
+   ```
+
 - 路径建议：`/www/wwwroot/ythls-FastAPI`
 - 赋权（SSH）：`chown -R www:www /www/wwwroot/ythls-FastAPI`
 
-2) 安装依赖与虚拟环境（SSH/终端）
-```bash
-apt-get update -y && apt-get install -y python3-venv python3-pip
-cd /www/wwwroot/ythls-FastAPI
-python3 -m venv venv && source venv/bin/activate
-pip install -U pip setuptools wheel
-pip install -r requirements.txt
-```
+4. 安装依赖与虚拟环境（SSH/终端）
 
-3) 前台验证
-```bash
-source venv/bin/activate
-python basla.py
-# 新开终端：curl http://127.0.0.1:3310/youtube
-```
+   ```
+   apt-get update -y && apt-get install -y python3-venv python3-pip
+   cd /www/wwwroot/ythls-FastAPI
+   python3 -m venv venv && source venv/bin/activate
+   pip install -U pip setuptools wheel
+   pip install -r requirements.txt
+   ```
 
-4) 用宝塔 Supervisor 托管
-- 新建进程：运行目录 `/www/wwwroot/ythls-FastAPI`
-- 启动命令：`/www/wwwroot/ythls-FastAPI/venv/bin/python basla.py`
-- 自动启动/重启：开启
+5. 前台验证
 
-5) Nginx 反向代理（单站点完整示例）
+   ```
+   source venv/bin/activate
+   python basla.py
+   # 新开终端：curl http://127.0.0.1:3310/youtube
+   ```
 
-将站点配置为下列内容（面板“配置文件”中替换），已包含根路径反代与 HLS 优化。
+6. systemd 后端服务
 
-```
-server
-{
-    listen 80;
-    server_name <example.com>;  # 改为你的域名
-    index index.php index.html index.htm default.php default.htm default.html;
-    root /www/wwwroot/ythls-FastAPI;
+   1. 创建服务文件
 
-    # 证书申请校验
-    include /www/server/panel/vhost/nginx/well-known/<example.com>.conf;
+      ```
+      nano /etc/systemd/system/ythls.service
+      ```
 
-    # 错误页
-    error_page 404 /404.html;
+   2. 服务文件内容
 
-    # 根路径反代
-    location / {
-        proxy_pass http://127.0.0.1:3310;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
-        proxy_buffering off;
-        proxy_request_buffering off;
-        proxy_read_timeout 600s;
-        proxy_send_timeout 600s;
-    }
+      ```
+      [Unit]
+        Description=ythls FastAPI Service
+        After=network.target
+      
+        [Service]
+        Type=simple
+        User=root
+        WorkingDirectory=/www/wwwroot/ythls-FastAPI
+        ExecStart=/www/wwwroot/ythls-FastAPI/venv/bin/python basla.py
+        Restart=always
+        RestartSec=10
+      
+        [Install]
+        WantedBy=multi-user.target
+      ```
 
-    # HLS 优化：禁用缓冲 + 透传 Range
-    location ~* \.(m3u8|ts|m4s)$ {
-        proxy_pass http://127.0.0.1:3310;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Range $http_range;
-        proxy_set_header If-Range $http_if_range;
-        proxy_http_version 1.1;
-        proxy_buffering off;
-        proxy_request_buffering off;
-        proxy_read_timeout 600s;
-        proxy_send_timeout 600s;
-    }
+   3. 启动服务
 
-    # PHP（如无需可保留或移除）
-    include enable-php-00.conf;
+      ```
+      systemctl daemon-reload
+      systemctl start ythls
+      systemctl enable ythls
+      systemctl status ythls
+      ```
 
-    # 伪静态
-    include /www/server/panel/vhost/rewrite/<example.com>.conf;
+7. Nginx反向代理（相应位置改为你的域名）
 
-    # 访问限制
-    location ~ ^/(\.user\.ini|\.htaccess|\.git|\.env|\.svn|\.project|LICENSE|README\.md) {
-        return 404;
-    }
+   ```
+   server
+   {
+       listen 80;
+       server_name <example.com>;  # 改为你的域名
+       index index.php index.html index.htm default.php default.htm default.html;
+       root /www/wwwroot/ythls-FastAPI;
+   
+       # 证书申请校验
+       include /www/server/panel/vhost/nginx/well-known/<example.com>.conf;
+   
+       # 错误页
+       error_page 404 /404.html;
+   
+       # 根路径反代
+       location / {
+           proxy_pass http://127.0.0.1:3310;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+           proxy_http_version 1.1;
+           proxy_buffering off;
+           proxy_request_buffering off;
+           proxy_read_timeout 600s;
+           proxy_send_timeout 600s;
+       }
+   
+       # HLS 优化：禁用缓冲 + 透传 Range
+       location ~* \.(m3u8|ts|m4s)$ {
+           proxy_pass http://127.0.0.1:3310;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+           proxy_set_header Range $http_range;
+           proxy_set_header If-Range $http_if_range;
+           proxy_http_version 1.1;
+           proxy_buffering off;
+           proxy_request_buffering off;
+           proxy_read_timeout 600s;
+           proxy_send_timeout 600s;
+       }
+   
+       # PHP（如无需可保留或移除）
+       include enable-php-00.conf;
+   
+       # 伪静态
+       include /www/server/panel/vhost/rewrite/<example.com>.conf;
+   
+       # 访问限制
+       location ~ ^/(\.user\.ini|\.htaccess|\.git|\.env|\.svn|\.project|LICENSE|README\.md) {
+           return 404;
+       }
+   
+       # 证书验证目录
+       location ~ \.well-known { allow all; }
+       if ($uri ~ "^/\.well-known/.*\.(php|jsp|py|js|css|lua|ts|go|zip|tar\.gz|rar|7z|sql|bak)$") { return 403; }
+   
+       access_log  /www/wwwlogs/<example.com>.log;
+       error_log   /www/wwwlogs/<example.com>.error.log;
+   }
+   ```
 
-    # 证书验证目录
-    location ~ \.well-known { allow all; }
-    if ($uri ~ "^/\.well-known/.*\.(php|jsp|py|js|css|lua|ts|go|zip|tar\.gz|rar|7z|sql|bak)$") { return 403; }
+8. HTTPS
+   - 面板 → 站点 → SSL → Let’s Encrypt 申请并开启“强制 HTTPS”。
 
-    access_log  /www/wwwlogs/<example.com>.log;
-    error_log   /www/wwwlogs/<example.com>.error.log;
-}
-```
 
-6) HTTPS
-- 面板 → 站点 → SSL → Let’s Encrypt 申请并开启“强制 HTTPS”。
+
+
 
 ## Docker Compose（可选）
 
