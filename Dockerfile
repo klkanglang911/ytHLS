@@ -31,5 +31,4 @@ RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --no-cache-dir -Ur requirements.txt
 
 # * Python Çalıştırılması
-# Copy cookies.txt to writable location at startup to prevent yt-dlp from corrupting the mounted file
-CMD ["sh", "-c", "cp -f /usr/src/ythls-FastAPI/cookies.txt /tmp/cookies.txt 2>/dev/null || true; python3 basla.py"]
+CMD ["python3", "basla.py"]
