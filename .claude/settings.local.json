@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python basla.py:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(set:*)",
+      "Bash(set PYTHONUTF8=1:*)",
+      "Bash(cmd.exe /c \"del /s /q __pycache__ 2>nul & rd /s /q Core\\__pycache__ 2>nul\")",
+      "Bash(uvicorn:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -24,10 +24,10 @@ async def get_video_hls(request: Request, id: str):
         try:
             r = await client.get(stream_url, follow_redirects=True)
         except Exception as e:
-            raise HTTPException(status_code=503, detail=f"Error fetching M3U8: {type(e).__name__}")
+            raise HTTPException(status_code=410, detail=f"Error fetching M3U8: {type(e).__name__}")
 
     if r.status_code != 200:
-        raise HTTPException(status_code=503, detail="Failed to fetch M3U8 content")
+        raise HTTPException(status_code=410, detail=f"Failed to fetch M3U8 content (status: {r.status_code})")
 
     extra_qs = f"k={k}" if k else None
     rewritten = rewrite_m3u8_text(r.text, str(r.url), extra_qs)

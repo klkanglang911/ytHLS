@@ -99,10 +99,10 @@ async def proxy_m3u8(request: Request, url: str | None = None, u: str | None = N
         try:
             r = await client.get(target, follow_redirects=True)
         except Exception as e:
-            raise HTTPException(status_code=503, detail=f"Fetch error: {type(e).__name__}")
+            raise HTTPException(status_code=410, detail=f"Fetch error: {type(e).__name__}")
 
     if r.status_code != 200 or not r.text:
-        raise HTTPException(status_code=503, detail="Failed to fetch upstream m3u8")
+        raise HTTPException(status_code=410, detail=f"Failed to fetch upstream m3u8 (status: {r.status_code})")
 
     # Propagate API key to nested URIs
     k = get_api_key_from_request(request)
@@ -138,7 +138,7 @@ async def proxy_segment(request: Request, url: str | None = None, u: str | None 
         async with httpx.AsyncClient(timeout=60.0) as client:
             r = await client.get(target, headers=fwd_headers, follow_redirects=True)
     except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Segment fetch error: {type(e).__name__}")
+        raise HTTPException(status_code=410, detail=f"Segment fetch error: {type(e).__name__}")
 
     resp = Response(content=r.content, status_code=r.status_code, media_type=r.headers.get("Content-Type", "application/octet-stream"))
     # Pass through useful headers for seeking
