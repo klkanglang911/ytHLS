@@ -7,11 +7,14 @@ from Settings import CACHE_TIME
 
 class YouTube:
     def __init__(self):
+        # Use /tmp/cookies.txt (writable copy) to prevent yt-dlp from corrupting mounted file
+        import os
+        cookie_path = "/tmp/cookies.txt" if os.path.exists("/tmp/cookies.txt") else "cookies.txt"
         self.ydl_opts = {
             "quiet"       : True,
             "no_warnings" : True,
             "format"      : "best",
-            "cookiefile"  : "cookies.txt"
+            "cookiefile"  : cookie_path
         }
 
     @kekik_cache(ttl=CACHE_TIME)
