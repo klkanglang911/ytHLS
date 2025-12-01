@@ -54,22 +54,8 @@ async def get_channel_hls(request: Request, id: str):
     if not stream_url:
         raise HTTPException(status_code=410, detail="HLS URL not found")
 
-    if not _host_allowed(stream_url):
-        raise HTTPException(status_code=410, detail="Upstream host not allowed")
-
-    # 获取并改写 M3U8 内容，使后续层级与分片均走本服务代理
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        try:
-            r = await client.get(stream_url, follow_redirects=True)
-        except Exception as e:
-            raise HTTPException(status_code=410, detail=f"Error fetching M3U8: {type(e).__name__}")
-
-    if r.status_code != 200:
-        raise HTTPException(status_code=410, detail=f"Failed to fetch M3U8 content (status: {r.status_code})")
-
-    extra_qs = f"k={k}" if k else None
-    rewritten = rewrite_m3u8_text(r.text, str(r.url), extra_qs)
-    return Response(content=rewritten, media_type="application/vnd.apple.mpegurl")
+    # Direct redirect to YouTube HLS URL (works with most players like PotPlayer)
+    return RedirectResponse(url=stream_url, status_code=302)
 
 
 @youtube_router.get("/channel/{id}/lives.json")
