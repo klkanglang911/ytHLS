@@ -7,14 +7,17 @@ from Settings import CACHE_TIME
 
 class YouTube:
     def __init__(self):
-        # Use cookies_work.txt (copy made at container startup) to prevent corruption of original
-        import os
-        cookie_path = "cookies_work.txt" if os.path.exists("cookies_work.txt") else "cookies.txt"
+        import shutil
+        # Copy original cookies to work file on every init to prevent yt-dlp from losing login info
+        try:
+            shutil.copy("cookies.txt", "cookies_work.txt")
+        except Exception:
+            pass
         self.ydl_opts = {
             "quiet"       : True,
             "no_warnings" : True,
             "format"      : "best",
-            "cookiefile"  : cookie_path,
+            "cookiefile"  : "cookies_work.txt",
         }
 
     @kekik_cache(ttl=CACHE_TIME)
