@@ -12,9 +12,17 @@ from Core.Modules._auth import enforce_api_key
 async def get_video_hls(request: Request, id: str):
     print(f"[DEBUG] m3u8 request for video: {id}")
     # Enforce API Key if configured
-    await enforce_api_key(request)
-    print(f"[DEBUG] API key check passed")
-    yt_data    = await youtube.video2data(id)
+    try:
+        await enforce_api_key(request)
+        print(f"[DEBUG] API key check passed")
+    except HTTPException as e:
+        print(f"[DEBUG] API key check failed: {e.status_code} - {e.detail}")
+        raise HTTPException(status_code=410, detail=f"Auth error: {e.detail}")
+    except Exception as e:
+        print(f"[DEBUG] Unexpected error in enforce_api_key: {type(e).__name__}: {e}")
+        # Continue without auth check on unexpected errors
+
+    yt_data = await youtube.video2data(id)
     print(f"[DEBUG] yt_data: {yt_data}")
     stream_url = yt_data.get("streamUrl")
     print(f"[DEBUG] stream_url: {stream_url[:50] if stream_url else 'None'}")

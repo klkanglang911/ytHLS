@@ -36,6 +36,8 @@ def get_api_key_from_request(request: Request) -> str | None:
 
 
 async def enforce_api_key(request: Request) -> str | None:
+    print(f"[DEBUG AUTH] api_key_required() = {api_key_required()}")
+    print(f"[DEBUG AUTH] _security_cfg() = {_security_cfg()}")
     if not api_key_required():
         # Not required; allow but return provided key if any (to propagate)
         return get_api_key_from_request(request)
