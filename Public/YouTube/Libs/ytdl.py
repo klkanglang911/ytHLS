@@ -7,13 +7,11 @@ from Settings import CACHE_TIME
 
 class YouTube:
     def __init__(self):
-        # Use mounted cookies.txt directly; set cookiesfrombrowser=None to prevent modification attempts
         self.ydl_opts = {
-            "quiet"            : True,
-            "no_warnings"      : True,
-            "format"           : "best",
-            "cookiefile"       : "cookies.txt",
-            "cookiesfrombrowser": (None, None, None, None),  # Disable browser cookie extraction
+            "quiet"       : True,
+            "no_warnings" : True,
+            "format"      : "best",
+            "cookiefile"  : "cookies.txt",
         }
 
     @kekik_cache(ttl=CACHE_TIME)
