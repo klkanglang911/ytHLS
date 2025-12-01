@@ -5,31 +5,48 @@ from yt_dlp   import YoutubeDL
 from Core     import kekik_cache
 from Settings import CACHE_TIME
 import shutil
+import uuid
+import os
 
-def _refresh_cookies():
-    """Copy original cookies to work file before each yt-dlp call to prevent login info loss"""
+def _get_fresh_cookies() -> str:
+    """Create a unique copy of cookies for each yt-dlp call to prevent save_cookies() corruption.
+    Returns the path to the temporary cookie file.
+    """
+    temp_cookie = f"cookies_temp_{uuid.uuid4().hex[:8]}.txt"
     try:
-        shutil.copy("cookies.txt", "cookies_work.txt")
+        shutil.copy("cookies.txt", temp_cookie)
     except Exception:
-        pass
+        return "cookies.txt"  # Fallback to original
+    return temp_cookie
+
+def _cleanup_cookie(path: str):
+    """Remove temporary cookie file after use."""
+    if path.startswith("cookies_temp_"):
+        try:
+            os.remove(path)
+        except Exception:
+            pass
 
 class YouTube:
     def __init__(self):
-        self.ydl_opts = {
+        self.base_opts = {
             "quiet"       : True,
             "no_warnings" : True,
             "format"      : "best",
-            "cookiefile"  : "cookies_work.txt",
         }
 
     @kekik_cache(ttl=CACHE_TIME)
     async def __data(self, video_id: str) -> dict:
-        _refresh_cookies()
-        with YoutubeDL(self.ydl_opts) as ydl:
-            try:
-                info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
-            except Exception:
-                return {}
+        cookie_file = _get_fresh_cookies()
+        opts = {**self.base_opts, "cookiefile": cookie_file}
+        try:
+            with YoutubeDL(opts) as ydl:
+                try:
+                    info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
+                except Exception:
+                    return {}
+        finally:
+            _cleanup_cookie(cookie_file)
 
         baslik      = info.get("title", "").rstrip("- YouTube").strip()
         author_name = info.get("uploader", None)
@@ -54,12 +71,16 @@ class YouTube:
 
     @kekik_cache(ttl=CACHE_TIME)
     async def kanal2data(self, channel_id: str) -> dict:
-        _refresh_cookies()
-        with YoutubeDL(self.ydl_opts) as ydl:
-            try:
-                info = ydl.extract_info(f"https://www.youtube.com/channel/{channel_id}/live", download=False)
-            except Exception:
-                return {}
+        cookie_file = _get_fresh_cookies()
+        opts = {**self.base_opts, "cookiefile": cookie_file}
+        try:
+            with YoutubeDL(opts) as ydl:
+                try:
+                    info = ydl.extract_info(f"https://www.youtube.com/channel/{channel_id}/live", download=False)
+                except Exception:
+                    return {}
+        finally:
+            _cleanup_cookie(cookie_file)
 
         live_video_id = info.get("id", None)
 
@@ -77,12 +98,16 @@ class YouTube:
         ]
 
         for url in urls:
-            _refresh_cookies()
-            with YoutubeDL({**self.ydl_opts, "extract_flat": True}) as ydl:
-                try:
-                    info = ydl.extract_info(url, download=False)
-                except Exception:
-                    continue
+            cookie_file = _get_fresh_cookies()
+            opts = {**self.base_opts, "cookiefile": cookie_file, "extract_flat": True}
+            try:
+                with YoutubeDL(opts) as ydl:
+                    try:
+                        info = ydl.extract_info(url, download=False)
+                    except Exception:
+                        continue
+            finally:
+                _cleanup_cookie(cookie_file)
 
             entries = info.get("entries") or []
             lives: list[dict] = []

@@ -1,5 +1,3 @@
 #!/bin/sh
-# Copy cookies.txt to a working location before starting the app
-# This prevents yt-dlp from corrupting the original mounted file
-cp /usr/src/ythls-FastAPI/cookies.txt /usr/src/ythls-FastAPI/cookies_work.txt 2>/dev/null || true
+# Original cookies.txt is now preserved - each yt-dlp call creates its own temp copy
 exec python3 basla.py
