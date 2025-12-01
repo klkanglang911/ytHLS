@@ -48,7 +48,7 @@ async def istekten_once_sonra(request: Request, call_next):
 
     try:
         # async with asyncio.timeout(7.5):
-        response = await asyncio.wait_for(call_next(request), timeout=7.5)
+        response = await asyncio.wait_for(call_next(request), timeout=60)
         if response:
             log_veri["kod"] = response.status_code
         else:
@@ -81,11 +81,11 @@ async def log_salla(log_veri: dict, request: Request):
     cihaz_label  = f"[green]{'cihaz':<{LABEL_WIDTH}}:[/]"
 
     log_lines = []
-    
-    log_lines.append(f"[bold blue]»[/] [bold turquoise2]{log_url}[/]")
+
+    log_lines.append(f"[bold blue]>>[/] [bold turquoise2]{log_url}[/]")
 
     if log_veri["veri"]:
-        log_lines.append(f"[bold magenta]»[/] [bold cyan]{log_veri['veri']}[/]")
+        log_lines.append(f"[bold magenta]>>[/] [bold cyan]{log_veri['veri']}[/]")
 
     durum_line = (
         f"  {durum_label} [bold green]{log_veri['method']}[/]"
@@ -128,4 +128,8 @@ async def log_salla(log_veri: dict, request: Request):
     log_lines.append(f"  {cihaz_label} [magenta]{log_veri['cihaz']}[/]")
 
     final_log = "\n".join(log_lines)
-    konsol.log(final_log + "\n")
+    try:
+        konsol.log(final_log + "\n")
+    except UnicodeEncodeError:
+        # Windows GBK encoding issue fallback
+        print(f"[LOG] {log_veri['method']} {log_veri['url']} - {log_veri['kod']} ({log_veri['sure']}s)")

@@ -26,7 +26,11 @@ class YouTube:
         author_name = info.get("uploader", None)
         m3u8_url    = info.get("url", None)
 
-        konsol.print(f"\n[yellow]{author_name} | {baslik}")
+        # Windows GBK encoding workaround - skip console output for non-ASCII
+        try:
+            konsol.print(f"\n[yellow]{author_name} | {baslik}")
+        except (UnicodeEncodeError, Exception):
+            pass  # Silently skip logging on Windows encoding issues
 
         return {
             "authorName"  : author_name,

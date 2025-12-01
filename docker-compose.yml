@@ -11,8 +11,9 @@ services:
     build          : .
 
     volumes:
-      - .:/usr/src/ythls-FastAPI
+      - ./AYAR.yml:/usr/src/ythls-FastAPI/AYAR.yml:ro
+      - ./cookies.txt:/usr/src/ythls-FastAPI/cookies.txt:ro
     networks:
       - local
     ports:
-      - 1453:3310
+      - 8889:3310

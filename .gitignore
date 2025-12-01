@@ -42,3 +42,8 @@ Thumbs.db
 AYAR.yml
 cookies.txt
 
+# Sync conflict files
+*Conflicted copy*
+nul
+nul*
+

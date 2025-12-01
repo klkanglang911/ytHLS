@@ -1,22 +1,23 @@
-# 示例配置（请勿在公开仓库中提交真实密钥）
+# 配置示例 - 复制为 AYAR.yml 并修改
+# cp AYAR.example.yml AYAR.yml
 
 PROJE : ythls-FastAPI
 APP   :
-  HOST    : 127.0.0.1   # 生产建议仅本机监听，由 Nginx 反代
+  HOST    : 0.0.0.0    # Docker 部署使用 0.0.0.0
   PORT    : 3310
   WORKERS : 1
-  CACHE   : 15          # 分钟
+  CACHE   : 15         # 缓存TTL（分钟）
 
 # 解析后端：true=使用 yt-dlp；false=使用 httpx+parsel
 yt-dlp : true
 
-# 可选：API Key 访问控制（示例值，部署时用环境变量覆盖更安全 可多个KEY，一行一个）
+# API Key 访问控制
 SECURITY:
-  REQUIRE_API_KEY: true
-  API_KEYS:
-    - <自定义字母数字API Key>       
+  REQUIRE_API_KEY: false    # 设为 true 启用验证
+  API_KEYS:                 # 多个 Key 一行一个
+    - your-api-key-here
+    # - another-key
 
-# 生产环境推荐用环境变量覆盖上述安全配置：
+# 环境变量覆盖（可选）：
 #   YTHLS_REQUIRE_API_KEY=true
 #   YTHLS_API_KEYS="KeyA,KeyB"
-
