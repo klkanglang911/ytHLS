@@ -30,5 +30,8 @@ RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --no-cache-dir -U setuptools wheel && \
     python3 -m pip install --no-cache-dir -Ur requirements.txt
 
-# * Python Çalıştırılması
-CMD ["python3", "basla.py"]
+# * Make entrypoint executable
+RUN chmod +x /usr/src/ythls-FastAPI/entrypoint.sh
+
+# * Run via entrypoint script
+CMD ["/usr/src/ythls-FastAPI/entrypoint.sh"]

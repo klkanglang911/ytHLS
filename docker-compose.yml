@@ -12,7 +12,7 @@ services:
 
     volumes:
       - ./AYAR.yml:/usr/src/ythls-FastAPI/AYAR.yml:ro
-      - ./cookies.txt:/usr/src/ythls-FastAPI/cookies.txt
+      - ./cookies.txt:/usr/src/ythls-FastAPI/cookies.txt:ro
     networks:
       - local
     ports:
