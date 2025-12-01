@@ -4,15 +4,17 @@ from CLI      import konsol
 from yt_dlp   import YoutubeDL
 from Core     import kekik_cache
 from Settings import CACHE_TIME
+import shutil
+
+def _refresh_cookies():
+    """Copy original cookies to work file before each yt-dlp call to prevent login info loss"""
+    try:
+        shutil.copy("cookies.txt", "cookies_work.txt")
+    except Exception:
+        pass
 
 class YouTube:
     def __init__(self):
-        import shutil
-        # Copy original cookies to work file on every init to prevent yt-dlp from losing login info
-        try:
-            shutil.copy("cookies.txt", "cookies_work.txt")
-        except Exception:
-            pass
         self.ydl_opts = {
             "quiet"       : True,
             "no_warnings" : True,
@@ -22,6 +24,7 @@ class YouTube:
 
     @kekik_cache(ttl=CACHE_TIME)
     async def __data(self, video_id: str) -> dict:
+        _refresh_cookies()
         with YoutubeDL(self.ydl_opts) as ydl:
             try:
                 info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
@@ -51,6 +54,7 @@ class YouTube:
 
     @kekik_cache(ttl=CACHE_TIME)
     async def kanal2data(self, channel_id: str) -> dict:
+        _refresh_cookies()
         with YoutubeDL(self.ydl_opts) as ydl:
             try:
                 info = ydl.extract_info(f"https://www.youtube.com/channel/{channel_id}/live", download=False)
@@ -73,6 +77,7 @@ class YouTube:
         ]
 
         for url in urls:
+            _refresh_cookies()
             with YoutubeDL({**self.ydl_opts, "extract_flat": True}) as ydl:
                 try:
                     info = ydl.extract_info(url, download=False)
