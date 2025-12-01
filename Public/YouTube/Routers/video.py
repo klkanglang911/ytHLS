@@ -10,10 +10,14 @@ from Core.Modules._auth import enforce_api_key
 
 @youtube_router.get("/video/{id}.m3u8")
 async def get_video_hls(request: Request, id: str):
+    print(f"[DEBUG] m3u8 request for video: {id}")
     # Enforce API Key if configured
     await enforce_api_key(request)
+    print(f"[DEBUG] API key check passed")
     yt_data    = await youtube.video2data(id)
+    print(f"[DEBUG] yt_data: {yt_data}")
     stream_url = yt_data.get("streamUrl")
+    print(f"[DEBUG] stream_url: {stream_url[:50] if stream_url else 'None'}")
     if not stream_url:
         raise HTTPException(status_code=410, detail="HLS URL not found")
 
