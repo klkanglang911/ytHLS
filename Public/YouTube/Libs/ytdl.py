@@ -8,20 +8,20 @@ import shutil
 import uuid
 import os
 
-def _get_fresh_cookies() -> str:
+def _get_fresh_cookies() -> str | None:
     """Create a unique copy of cookies for each yt-dlp call to prevent save_cookies() corruption.
-    Returns the path to the temporary cookie file.
+    Returns the path to the temporary cookie file, or None if copy fails.
     """
     temp_cookie = f"cookies_temp_{uuid.uuid4().hex[:8]}.txt"
     try:
         shutil.copy("cookies.txt", temp_cookie)
+        return temp_cookie
     except Exception:
-        return "cookies.txt"  # Fallback to original
-    return temp_cookie
+        return None  # Don't fallback to original to prevent corruption
 
-def _cleanup_cookie(path: str):
+def _cleanup_cookie(path: str | None):
     """Remove temporary cookie file after use."""
-    if path.startswith("cookies_temp_"):
+    if path and path.startswith("cookies_temp_"):
         try:
             os.remove(path)
         except Exception:
@@ -38,6 +38,8 @@ class YouTube:
     @kekik_cache(ttl=CACHE_TIME)
     async def __data(self, video_id: str) -> dict:
         cookie_file = _get_fresh_cookies()
+        if not cookie_file:
+            return {}  # Can't proceed without cookies
         opts = {**self.base_opts, "cookiefile": cookie_file}
         try:
             with YoutubeDL(opts) as ydl:
@@ -72,6 +74,8 @@ class YouTube:
     @kekik_cache(ttl=CACHE_TIME)
     async def kanal2data(self, channel_id: str) -> dict:
         cookie_file = _get_fresh_cookies()
+        if not cookie_file:
+            return {}  # Can't proceed without cookies
         opts = {**self.base_opts, "cookiefile": cookie_file}
         try:
             with YoutubeDL(opts) as ydl:
@@ -99,6 +103,8 @@ class YouTube:
 
         for url in urls:
             cookie_file = _get_fresh_cookies()
+            if not cookie_file:
+                continue  # Skip if can't create temp cookies
             opts = {**self.base_opts, "cookiefile": cookie_file, "extract_flat": True}
             try:
                 with YoutubeDL(opts) as ydl:
